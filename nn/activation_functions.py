@@ -40,12 +40,3 @@ class Relu(ActivationFunction):
         x[x > 0] = 1
         x[x <= 0] = 0
         return x
-
-
-class Softmax(ActivationFunction):
-
-    def function(self, x):
-        return np.exp(x) / np.exp(x).sum()
-
-    def gradient(self, x):
-        return np.diag(x) - np.outer(x, x)

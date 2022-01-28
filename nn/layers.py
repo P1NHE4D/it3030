@@ -2,7 +2,7 @@ from abc import abstractmethod, ABC
 
 from numpy import ndarray
 
-from nn.activation_functions import ActivationFunction, Softmax
+from nn.activation_functions import ActivationFunction
 import numpy as np
 
 
@@ -47,32 +47,43 @@ class Dense(Layer):
             self.weights = np.random.uniform(-0.1, 0.1, (len(X), self.units))
             self.weight_update = np.zeros((len(X), self.units))
 
-        self.input = X
         # store data for backpropagation
+        self.input = X
         self.output_sum = np.dot(X, self.weights)
 
         # compute activation value
         return self.activation.function(self.output_sum)
 
-    def backward(self, J_L_Z: ndarray):
-        # TODO
-        if isinstance(self.activation, Softmax):
-            J_S = self.activation.gradient(self.output_sum)
-            J_L_Z = np.dot(J_L_Z, J_S)
-            J_Z_sum = np.diag(self.output_sum)
-        else:
-            J_Z_sum = np.diag(self.activation.gradient(self.output_sum))
-        J_Z_Y = np.dot(J_Z_sum, self.weights[:-1].T)
-        J_Z_W = np.outer(self.input, J_Z_sum.diagonal())
-        J_L_Y = np.dot(J_L_Z, J_Z_Y)
-        J_L_W = J_L_Z * J_Z_W
+    def backward(self, J_L_N: ndarray):
+        J_N_SUM = np.diag(self.activation.gradient(self.output_sum))
+        J_N_M = np.dot(J_N_SUM, self.weights[:-1].T)
+        J_N_W = np.outer(self.input, J_N_SUM.diagonal())
+        J_L_M = np.dot(J_L_N, J_N_M)
+        J_L_W = J_L_N * J_N_W
 
         self.weight_update += J_L_W
-        return J_L_Y
+        return J_L_M
 
     def update_weights(self, learning_rate):
         self.weights -= learning_rate * self.weight_update
         self.weight_update = np.zeros(self.weight_update.shape)
+
+
+class Softmax(Layer):
+
+    def __init__(self):
+        self.input = None
+
+    def forward(self, X):
+        self.input = X
+        return np.exp(X) / np.exp(X).sum()
+
+    def backward(self, J_L_Z: ndarray):
+        J_S = np.diag(self.input) - np.outer(self.input, self.input)
+        return np.dot(J_L_Z, J_S)
+
+    def update_weights(self, learning_rate):
+        pass
 
 
 class Flatten(Layer):
