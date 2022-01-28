@@ -33,25 +33,13 @@ class Tanh(ActivationFunction):
 class Relu(ActivationFunction):
 
     def function(self, x):
-        v = np.copy(x)
-        v[v < 0] = 0
-        return v
-
-    def gradient(self, x):
-        v = np.copy(x)
-        v[v > 0] = 1
-        v[v < 0] = 0
-        if len(v[v == 0]) != 0:
-            raise Exception("Gradient of ReLu function undefined at x = 0!")
-        return v
-
-
-class Linear(ActivationFunction):
-    def function(self, x):
+        x[x <= 0] = 0
         return x
 
     def gradient(self, x):
-        return np.ones(x.shape)
+        x[x > 0] = 1
+        x[x <= 0] = 0
+        return x
 
 
 class Softmax(ActivationFunction):

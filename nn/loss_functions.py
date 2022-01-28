@@ -26,7 +26,7 @@ class MSE(LossFunction):
 
 class CrossEntropy(LossFunction):
     def loss(self, y_pred, y_true):
-        pass
+        return -np.sum(y_true * np.log(y_pred))
 
     def gradient(self, y_pred, y_true):
-        pass
+        return y_pred - y_true

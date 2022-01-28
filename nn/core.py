@@ -1,7 +1,9 @@
+from abc import ABC, abstractmethod
+
 from numpy.core.records import ndarray
 import numpy as np
 from nn.activation_functions import ActivationFunction
-from nn.loss_functions import MSE
+from nn.loss_functions import LossFunction
 from tqdm import tqdm
 
 
@@ -23,7 +25,7 @@ class SequentialNetwork:
         """
         self.layers.append(layer)
 
-    def compile(self, loss_function: ActivationFunction = MSE()):
+    def compile(self, loss_function: LossFunction):
         self.loss_function = loss_function
 
     def fit(self, X, Y):
@@ -52,15 +54,12 @@ class SequentialNetwork:
 
             # update weights
             for layer in self.layers:
-                layer.weights -= self.learning_rate * layer.weight_update
-                layer.weight_update = np.zeros(layer.weight_update.shape)
+                layer.update_weights(self.learning_rate)
 
             progress.set_description(
                 "Epoch: {}".format(epoch) +
                 " Loss: {}".format(loss)
             )
-        for layer in self.layers:
-            print(layer.weights)
 
     def predict(self, X):
         # for each layer in network
@@ -73,54 +72,3 @@ class SequentialNetwork:
                 forward_val = layer.forward(forward_val)
             res.append(forward_val)
         return np.array(res)
-
-
-class Layer:
-    """
-    each layer comprises a set of weights and biases associated with the neurons that feed into the layer
-    should be able to define the input size and output size
-    """
-
-    def __init__(self, units, activation: ActivationFunction):
-        self.units = units
-        self.activation = activation
-        self.weights = None
-        self.input = None
-        self.output_sum = None
-        self.weight_update = None
-
-    def forward(self, X: ndarray):
-        """
-        :return: activation value based on the input
-        """
-        # add 1 for bias
-        X = np.hstack([X, [1]])
-
-        # init weights if they have not been defined yet
-        if self.weights is None:
-            self.weights = np.random.uniform(-0.1, 0.1, (len(X), self.units))
-            # self.weights = np.full((len(X), self.units), 0.1)
-            # self.bias = np.full((len(X)), 0.1)
-            self.weight_update = np.zeros((len(X), self.units))
-
-        self.input = X
-        # store data for backpropagation
-        self.output_sum = np.dot(X, self.weights)
-
-        # compute activation value
-        return self.activation.function(self.output_sum)
-
-    def backward(self, J_L_Z: ndarray):
-        """
-
-        :param j_sum: gradient information passed in from succeeding layer
-        :return: gradient with respect to preceeding layer
-        """
-        J_Z_sum = np.diag(self.activation.gradient(self.output_sum))
-        J_Z_Y = np.dot(J_Z_sum, self.weights[:-1].T)
-        J_Z_W = np.outer(self.input, J_Z_sum.diagonal())
-        J_L_Y = np.dot(J_L_Z, J_Z_Y)
-        J_L_W = J_L_Z * J_Z_W
-
-        self.weight_update += J_L_W
-        return J_L_Y
