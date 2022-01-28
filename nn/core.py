@@ -33,7 +33,7 @@ class SequentialNetwork:
         # compute loss based on output of last layer using loss function
         # compute accuracy etc. and print it to console
         # conduct backward pass
-        progress = tqdm(range(self.epochs))
+        progress = tqdm(range(1, self.epochs + 1))
         for epoch in progress:
             loss = None
             for x, y in zip(X, Y):
@@ -53,11 +53,14 @@ class SequentialNetwork:
             # update weights
             for layer in self.layers:
                 layer.weights -= self.learning_rate * layer.weight_update
+                layer.weight_update = np.zeros(layer.weight_update.shape)
 
             progress.set_description(
                 "Epoch: {}".format(epoch) +
                 " Loss: {}".format(loss)
             )
+        for layer in self.layers:
+            print(layer.weights)
 
     def predict(self, X):
         # for each layer in network
@@ -72,7 +75,7 @@ class SequentialNetwork:
         return np.array(res)
 
 
-class DenseLayer:
+class Layer:
     """
     each layer comprises a set of weights and biases associated with the neurons that feed into the layer
     should be able to define the input size and output size
@@ -81,7 +84,7 @@ class DenseLayer:
     def __init__(self, units, activation: ActivationFunction):
         self.units = units
         self.activation = activation
-        self.weights = None  # weights should be n + 1 to include the bias
+        self.weights = None
         self.input = None
         self.output_sum = None
         self.weight_update = None
@@ -90,18 +93,19 @@ class DenseLayer:
         """
         :return: activation value based on the input
         """
-        # add column with ones to handle the bias
-        # X = np.hstack([X, [1]])
+        # add 1 for bias
+        X = np.hstack([X, [1]])
 
         # init weights if they have not been defined yet
         if self.weights is None:
-            # self.weights = np.random.random((len(X), self.units))
-            self.weights = np.full((self.units, len(X)), 0.1)
-            self.weight_update = np.zeros((self.units, len(X)))
+            self.weights = np.random.uniform(-0.1, 0.1, (len(X), self.units))
+            # self.weights = np.full((len(X), self.units), 0.1)
+            # self.bias = np.full((len(X)), 0.1)
+            self.weight_update = np.zeros((len(X), self.units))
 
-        # store data for backpropagation
         self.input = X
-        self.output_sum = np.dot(self.weights, X)
+        # store data for backpropagation
+        self.output_sum = np.dot(X, self.weights)
 
         # compute activation value
         return self.activation.function(self.output_sum)
@@ -112,12 +116,11 @@ class DenseLayer:
         :param j_sum: gradient information passed in from succeeding layer
         :return: gradient with respect to preceeding layer
         """
-        r = np.diag(self.activation.gradient(self.output_sum)) # 2 x 2
-        J_Z_Y = np.dot(r, self.weights) # 2 x 2 dot 2 x 32 -> 2 x 32
-        J_Z_W = np.outer(self.input, self.activation.gradient(self.output_sum)) # outer(32, 2) -> 2 x 32
-        J_L_W = J_L_Z * J_Z_W #
-        J_L_Y = np.dot(J_L_Z, J_Z_Y).reshape((-1, ))
+        J_Z_sum = np.diag(self.activation.gradient(self.output_sum))
+        J_Z_Y = np.dot(J_Z_sum, self.weights[:-1].T)
+        J_Z_W = np.outer(self.input, J_Z_sum.diagonal())
+        J_L_Y = np.dot(J_L_Z, J_Z_Y)
+        J_L_W = J_L_Z * J_Z_W
 
-
-        self.weight_update += J_L_W.T
+        self.weight_update += J_L_W
         return J_L_Y
