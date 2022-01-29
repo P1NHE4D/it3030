@@ -20,10 +20,6 @@ class Layer(ABC):
 
 
 class Dense(Layer):
-    """
-    each layer comprises a set of weights and biases associated with the neurons that feed into the layer
-    should be able to define the input size and output size
-    """
 
     def __init__(self, units, activation: ActivationFunction):
         self.units = units
