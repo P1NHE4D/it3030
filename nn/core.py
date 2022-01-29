@@ -1,6 +1,7 @@
 import numpy as np
 from nn.loss_functions import LossFunction
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 
 class SequentialNetwork:
@@ -24,12 +25,15 @@ class SequentialNetwork:
     def compile(self, loss_function: LossFunction):
         self.loss_function = loss_function
 
-    def fit(self, X, Y):
-        loss_sum = 0
+    def fit(self, x_train, y_train, x_val, y_val):
+
         progress = tqdm(range(1, self.epochs + 1))
+        train_epoch_loss = []
+        val_epoch_loss = []
         for epoch in progress:
-            loss = 0
-            for x, y in zip(X, Y):
+            train_loss = []
+            val_loss = []
+            for x, y in zip(x_train, y_train):
                 forward_val = x
                 # forward pass
                 for layer in self.layers:
@@ -37,6 +41,7 @@ class SequentialNetwork:
 
                 # loss
                 loss = self.loss_function.loss(forward_val, y)
+                train_loss.append(loss)
 
                 # backprop
                 backwards_val = self.loss_function.gradient(forward_val, y)
@@ -47,14 +52,33 @@ class SequentialNetwork:
             for layer in self.layers:
                 layer.update_weights(self.learning_rate)
 
-            loss_sum += loss
+            for x, y in zip(x_val, y_val):
+                forward_val = x
+                # forward pass
+                for layer in self.layers:
+                    forward_val = layer.forward(forward_val)
+
+                # loss
+                loss = self.loss_function.loss(forward_val, y)
+                val_loss.append(loss)
+
+            train_epoch_loss.append(np.mean(train_loss))
+            val_epoch_loss.append(np.mean(val_loss))
+
             progress.set_description(
                 "Epoch: {}".format(epoch) +
                 " | "
-                "Loss: {}".format(loss) +
+                "Avg. train loss: {}".format(np.mean(train_loss)) +
                 " | " +
-                "Avg. loss: {}".format(loss_sum / epoch)
+                "Avg. val loss: {}".format(np.mean(val_loss))
             )
+
+        plt.plot(range(1, self.epochs + 1), train_epoch_loss, label='Train')
+        plt.plot(range(1, self.epochs + 1), val_epoch_loss, label='Val')
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.legend()
+        plt.show()
 
     def predict(self, X):
         res = []
