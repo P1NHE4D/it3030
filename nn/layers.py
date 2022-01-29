@@ -1,7 +1,5 @@
 from abc import abstractmethod, ABC
-
 from numpy import ndarray
-
 from nn.activation_functions import ActivationFunction
 import numpy as np
 
@@ -32,13 +30,10 @@ class Dense(Layer):
         self.activation = activation
         self.weights = None
         self.input = None
-        self.output_sum = None
         self.weight_update = None
+        self.output = None
 
     def forward(self, X: ndarray):
-        """
-        :return: activation value based on the input
-        """
         # add 1 for bias
         X = np.hstack([X, [1]])
 
@@ -49,13 +44,14 @@ class Dense(Layer):
 
         # store data for backpropagation
         self.input = X
-        self.output_sum = np.dot(X, self.weights)
+        output_sum = np.dot(X, self.weights)
+        self.output = self.activation.function(output_sum)
 
         # compute activation value
-        return self.activation.function(self.output_sum)
+        return self.output
 
     def backward(self, J_L_N: ndarray):
-        J_N_SUM = np.diag(self.activation.gradient(self.output_sum))
+        J_N_SUM = np.diag(self.activation.gradient(self.output))
         J_N_M = np.dot(J_N_SUM, self.weights[:-1].T)
         J_N_W = np.outer(self.input, J_N_SUM.diagonal())
         J_L_M = np.dot(J_L_N, J_N_M)
@@ -72,14 +68,14 @@ class Dense(Layer):
 class Softmax(Layer):
 
     def __init__(self):
-        self.input = None
+        self.output = None
 
     def forward(self, X):
-        self.input = X
-        return np.exp(X) / np.exp(X).sum()
+        self.output = np.exp(X) / np.exp(X).sum()
+        return self.output
 
     def backward(self, J_L_Z: ndarray):
-        J_S = np.diag(self.input) - np.outer(self.input, self.input)
+        J_S = np.diag(self.output) - np.outer(self.output, self.output)
         return np.dot(J_L_Z, J_S)
 
     def update_weights(self, learning_rate):

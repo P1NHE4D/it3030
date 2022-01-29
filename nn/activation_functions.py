@@ -40,3 +40,12 @@ class Relu(ActivationFunction):
         x[x > 0] = 1
         x[x <= 0] = 0
         return x
+
+
+class Linear(ActivationFunction):
+
+    def function(self, x):
+        return x
+
+    def gradient(self, x):
+        return np.ones(x.shape)

@@ -1,8 +1,4 @@
-from abc import ABC, abstractmethod
-
-from numpy.core.records import ndarray
 import numpy as np
-from nn.activation_functions import ActivationFunction
 from nn.loss_functions import LossFunction
 from tqdm import tqdm
 
@@ -29,15 +25,10 @@ class SequentialNetwork:
         self.loss_function = loss_function
 
     def fit(self, X, Y):
-        # for batch in batches:
-        # for each layer in network
-        #   conduct forward pass of X
-        # compute loss based on output of last layer using loss function
-        # compute accuracy etc. and print it to console
-        # conduct backward pass
+        loss_sum = 0
         progress = tqdm(range(1, self.epochs + 1))
         for epoch in progress:
-            loss = None
+            loss = 0
             for x, y in zip(X, Y):
                 forward_val = x
                 # forward pass
@@ -56,15 +47,16 @@ class SequentialNetwork:
             for layer in self.layers:
                 layer.update_weights(self.learning_rate)
 
+            loss_sum += loss
             progress.set_description(
                 "Epoch: {}".format(epoch) +
-                " Loss: {}".format(loss)
+                " | "
+                "Loss: {}".format(loss) +
+                " | " +
+                "Avg. loss: {}".format(loss_sum / epoch)
             )
 
     def predict(self, X):
-        # for each layer in network
-        # conduct forward pass of X
-        # return output of final layer
         res = []
         for x in X:
             forward_val = x

@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-
 import numpy as np
 
 
@@ -26,7 +25,7 @@ class MSE(LossFunction):
 
 class CrossEntropy(LossFunction):
     def loss(self, y_pred, y_true):
-        return -np.sum(y_true * np.log(y_pred))
+        return -np.sum(y_true * np.log2(y_pred))
 
     def gradient(self, y_pred, y_true):
         return y_pred - y_true
