@@ -7,6 +7,7 @@ from nn.layers import Dense, Flatten, Softmax
 from nn.loss_functions import CrossEntropy
 from datasets.shapes import Shapes
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def main():

@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import cv2 as cv
 from tqdm import tqdm
@@ -16,6 +18,7 @@ class Shapes:
         self.img_noise = config["img_noise"]
         self.flatten = config["flatten"]
         self.dataset_size = config["dataset_size"]
+        self.centred = config["centred"]
 
     def draw_rectangle(self, img, width, height, x, y):
         img[y, x:x + width - 1] = 255
@@ -29,9 +32,16 @@ class Shapes:
         img[y:y + height, x + round(((width - 1) / 2))] = 255
         return self.add_noise(img)
 
-    def draw_circle(self, img, diameter, x, y):
+    def draw_circle(self, img):
+        diameter = np.random.choice(np.arange(start=self.width_range[0], stop=self.width_range[1] + 1))
+        radius = diameter // 2
+        if self.centred:
+                x = (self.img_dims // 2) - radius
+                y = (self.img_dims // 2) - radius
+        else:
+            x = np.random.choice(np.arange(start=0, stop=img.shape[0] - diameter + 1))
+            y = np.random.choice(np.arange(start=0, stop=img.shape[1] - diameter + 1))
         WHITE = (255, 255, 255)
-        radius = round(diameter / 2)
         cv.circle(img, (y+radius-1, x+radius-1), radius, WHITE, 1)
         return self.add_noise(img)
 
@@ -65,10 +75,14 @@ class Shapes:
         for _ in progress:
             # generate base image
             img = np.zeros((self.img_dims, self.img_dims))
-            width = np.random.choice(np.arange(start=self.width_range[0], stop=self.width_range[1] + 1))
-            height = np.random.choice(np.arange(start=self.height_range[0], stop=self.height_range[1] + 1))
-            x = np.random.choice(np.arange(start=0, stop=img.shape[0] - width + 1))
-            y = np.random.choice(np.arange(start=0, stop=img.shape[1] - height + 1))
+            width = min(self.img_dims, np.random.choice(np.arange(start=self.width_range[0], stop=self.width_range[1] + 1)))
+            height = min(self.img_dims, np.random.choice(np.arange(start=self.height_range[0], stop=self.height_range[1] + 1)))
+            if self.centred:
+                x = (self.img_dims // 2) - (width // 2)
+                y = (self.img_dims // 2) - (height // 2)
+            else:
+                x = np.random.choice(np.arange(start=0, stop=img.shape[0] - width + 1))
+                y = np.random.choice(np.arange(start=0, stop=img.shape[1] - height + 1))
 
             if shape == "rectangle":
                 img = self.draw_rectangle(img=img, width=width, height=height, x=x, y=y)
@@ -79,7 +93,7 @@ class Shapes:
                 target = [0, 1, 0, 0]
                 shape = "circle"
             elif shape == "circle":
-                img = self.draw_circle(img=img, diameter=width, x=x, y=y)
+                img = self.draw_circle(img=img)
                 target = [0, 0, 1, 0]
                 shape = "triangle"
             else:
