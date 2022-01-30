@@ -40,7 +40,7 @@ class SequentialNetwork:
                     forward_val = layer.forward(forward_val)
 
                 # loss
-                loss = self.loss_function.loss(forward_val, y)
+                loss = self.loss_function.loss(forward_val, y) + np.sum([layer.layer_penalty() for layer in self.layers])
                 train_loss.append(loss)
 
                 # backprop

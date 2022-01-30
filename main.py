@@ -9,20 +9,23 @@ from datasets.shapes import Shapes
 import numpy as np
 import matplotlib.pyplot as plt
 
+from nn.regularizers import L2
+
 
 def main():
     with open("config.json") as f:
         config = json.load(f)
     model = SequentialNetwork(config)
     model.add(Flatten())
-    model.add(Dense(units=64, activation=Relu()))
-    model.add(Dense(units=32, activation=Relu()))
-    model.add(Dense(units=4, activation=Linear()))
+    model.add(Dense(units=64, activation=Relu(), regularizer=L2(0.001)))
+    model.add(Dense(units=32, activation=Relu(), regularizer=L2(0.001)))
+    model.add(Dense(units=4, activation=Linear(), regularizer=L2(0.001)))
     model.add(Softmax())
     model.compile(loss_function=CrossEntropy())
 
     s = Shapes(config)
     x_train, y_train, x_val, y_val, x_test, y_test = s.generate_dataset()
+    # TODO: normalize data to improve results
 
     model.fit(x_train, y_train, x_val, y_val)
     y_test_pred = model.predict(x_test)

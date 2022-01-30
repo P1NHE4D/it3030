@@ -3,6 +3,8 @@ from numpy import ndarray
 from nn.activation_functions import ActivationFunction
 import numpy as np
 
+from nn.regularizers import Regularizer
+
 
 class Layer(ABC):
 
@@ -14,16 +16,19 @@ class Layer(ABC):
     def backward(self, J_L_Z: ndarray):
         pass
 
-    @abstractmethod
     def update_weights(self, learning_rate):
         pass
+
+    def layer_penalty(self):
+        return 0
 
 
 class Dense(Layer):
 
-    def __init__(self, units, activation: ActivationFunction):
+    def __init__(self, units, activation: ActivationFunction, regularizer: Regularizer = None):
         self.units = units
         self.activation = activation
+        self.regularizer = regularizer
         self.weights = None
         self.input = None
         self.weight_update = None
@@ -52,6 +57,8 @@ class Dense(Layer):
         J_N_W = np.outer(self.input, J_N_SUM.diagonal())
         J_L_M = np.dot(J_L_N, J_N_M)
         J_L_W = J_L_N * J_N_W
+        if self.regularizer:
+            J_L_W += self.regularizer.factor * self.regularizer.gradient(self.weights)
 
         self.weight_update += J_L_W
         return J_L_M
@@ -59,6 +66,11 @@ class Dense(Layer):
     def update_weights(self, learning_rate):
         self.weights -= learning_rate * self.weight_update
         self.weight_update = np.zeros(self.weight_update.shape)
+
+    def layer_penalty(self):
+        if self.regularizer:
+            return self.regularizer.factor * self.regularizer.penalty(self.weights)
+        return 0
 
 
 class Softmax(Layer):
@@ -74,9 +86,6 @@ class Softmax(Layer):
         J_S = np.diag(self.output) - np.outer(self.output, self.output)
         return np.dot(J_L_Z, J_S)
 
-    def update_weights(self, learning_rate):
-        pass
-
 
 class Flatten(Layer):
 
@@ -85,6 +94,3 @@ class Flatten(Layer):
 
     def backward(self, J_L_Z: ndarray):
         return J_L_Z
-
-    def update_weights(self, learning_rate):
-        pass
