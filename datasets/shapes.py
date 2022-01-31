@@ -110,6 +110,9 @@ class Shapes:
                 target = [0, 0, 0, 1]
                 shape = "rectangle"
 
+            if self.normalise:
+                img *= (1 / 255)
+
             if self.flatten:
                 img = img.reshape(-1)
 
