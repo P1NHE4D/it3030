@@ -1,6 +1,6 @@
 from nn.activation_functions import Relu, Sigmoid, Tanh, Linear
 from nn.core import SequentialNetwork
-from nn.layers import Layer, Flatten, Softmax, Dense
+from nn.layers import Flatten, Softmax, Dense
 from nn.loss_functions import CrossEntropy, MSE
 from nn.regularizers import L2, L1
 from utils.value_checking import check_boundary_value, check_option_value
