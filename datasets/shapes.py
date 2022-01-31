@@ -49,7 +49,7 @@ class Shapes:
             x = np.random.choice(np.arange(start=0, stop=img.shape[0] - diameter + 1))
             y = np.random.choice(np.arange(start=0, stop=img.shape[1] - diameter + 1))
         WHITE = (255, 255, 255)
-        cv.circle(img, (y + radius - 1, x + radius - 1), radius, WHITE, 1)
+        cv.circle(img, (y + radius, x + radius), radius, WHITE, 1)
         return self.add_noise(img)
 
     def draw_triangle(self, img, width, height, x, y):
