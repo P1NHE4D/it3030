@@ -28,6 +28,17 @@ class Shapes:
         self.centred = centred
 
     def draw_rectangle(self, img, width, height, x, y):
+        """
+        Adds a rectangle to the image
+
+        :param img: image
+        :param width: width of the rectangle
+        :param height: height of the rectangle
+        :param x: x coordinate
+        :param y: y coordinate
+        :return: image with rectangle
+        """
+
         img[y, x:x + width - 1] = 255
         img[y + height - 1, x:x + width] = 255
         img[y:y + height - 1, x] = 255
@@ -35,11 +46,29 @@ class Shapes:
         return self.add_noise(img)
 
     def draw_cross(self, img, width, height, x, y):
+        """
+        Adds a cross to the image
+
+        :param img: image
+        :param width: width of the cross
+        :param height: height of the cross
+        :param x: x coordinate
+        :param y: y coordinate
+        :return: image with cross
+        """
+
         img[y + round(((height - 1) / 2)), x:x + width] = 255
         img[y:y + height, x + round(((width - 1) / 2))] = 255
         return self.add_noise(img)
 
     def draw_circle(self, img):
+        """
+        Adds a circle to the image
+
+        :param img: image
+        :return img with circle
+        """
+
         diameter = np.random.choice(np.arange(start=self.width_range[0], stop=self.width_range[1] + 1))
         radius = diameter // 2
         if self.centred:
@@ -53,6 +82,17 @@ class Shapes:
         return self.add_noise(img)
 
     def draw_triangle(self, img, width, height, x, y):
+        """
+        Adds a triangle to the image
+
+        :param img: image
+        :param width: width of the triangle
+        :param height: height of the triangle
+        :param x: x coordinate
+        :param y: y coordinate
+        :return: image with triangle
+        """
+
         c1 = (x, y)
         c2 = (x + width, y)
         c3 = (x + round((width / 2)), y + height)
@@ -66,12 +106,20 @@ class Shapes:
         return img
 
     def add_noise(self, img):
+        """
+        Adds noise to a given image based on the noise frequency specified in the config
+        :param img: image
+        :return: image with noise
+        """
         flat_img = img.reshape(-1)
         idx = np.random.choice(np.arange(start=0, stop=len(flat_img)), round(self.img_noise * len(flat_img)))
         flat_img[idx] = 255 - flat_img[idx]
         return flat_img.reshape(img.shape)
 
     def generate_dataset(self):
+        """
+        Generates a training, validation, and test set comprising images with 4 different shapes
+        """
 
         images = []
         targets = []
@@ -82,10 +130,14 @@ class Shapes:
         for _ in progress:
             # generate base image
             img = np.zeros((self.img_dims, self.img_dims))
+
+            # specify width and height of shape
             width = min(self.img_dims,
                         np.random.choice(np.arange(start=self.width_range[0], stop=self.width_range[1] + 1)))
             height = min(self.img_dims,
                          np.random.choice(np.arange(start=self.height_range[0], stop=self.height_range[1] + 1)))
+
+            # specify coordinates of shape
             if self.centred:
                 x = (self.img_dims // 2) - (width // 2)
                 y = (self.img_dims // 2) - (height // 2)
@@ -93,6 +145,7 @@ class Shapes:
                 x = np.random.choice(np.arange(start=0, stop=img.shape[0] - width + 1))
                 y = np.random.choice(np.arange(start=0, stop=img.shape[1] - height + 1))
 
+            # add shape to image
             if shape == "rectangle":
                 img = self.draw_rectangle(img=img, width=width, height=height, x=x, y=y)
                 target = [1, 0, 0, 0]
@@ -122,6 +175,7 @@ class Shapes:
         images = np.array(images)
         targets = np.array(targets)
 
+        # allocate images randomly to training, validation, and test set
         train_size = round(self.split_ratio[0] * len(images))
         val_size = round(self.split_ratio[1] * len(images))
         idx = np.arange(start=0, stop=len(images))

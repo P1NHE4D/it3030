@@ -10,16 +10,39 @@ class Layer(ABC):
 
     @abstractmethod
     def forward(self, X):
+        """
+        computes the forward value of the layer
+
+        :param X: training data instance (vector)
+        :return: forward-pass value
+        """
         pass
 
     @abstractmethod
-    def backward(self, J_L_Z: ndarray):
+    def backward(self, J_L_N: ndarray):
+        """
+        computes the gradient with respect to the layer weights and the preceeding layers
+
+        :param J_L_N: gradient of succeeding layer
+        :return: gradient with respect to preceeding layer
+        """
         pass
 
     def update_weights(self, learning_rate):
+        """
+        updates the weights of the layer based on the accumulated weight gradient and learning rate
+
+        :param learning_rate: learning rate
+        """
         pass
 
     def layer_penalty(self):
+        """
+        Returns the weight penalty based on the regularization function
+        Returns 0 if no regularization function is defined
+
+        :return: penalty or 0
+        """
         return 0
 
 
@@ -36,10 +59,11 @@ class Dense(Layer):
         self.output = None
 
     def forward(self, X: ndarray):
+
         # add 1 for bias
         X = np.hstack([X, [1]])
 
-        # init weights if they have not been defined yet
+        # init weights if they have not yet been defined
         if self.weights is None:
             self.weights = np.random.uniform(self.wr[0], self.wr[1], (len(X), self.units))
             self.weight_update = np.zeros((len(X), self.units))
@@ -83,9 +107,9 @@ class Softmax(Layer):
         self.output = np.exp(X) / np.exp(X).sum()
         return self.output
 
-    def backward(self, J_L_Z: ndarray):
+    def backward(self, J_L_N: ndarray):
         J_S = np.diag(self.output) - np.outer(self.output, self.output)
-        return np.dot(J_L_Z, J_S)
+        return np.dot(J_L_N, J_S)
 
 
 class Flatten(Layer):
@@ -93,5 +117,5 @@ class Flatten(Layer):
     def forward(self, X):
         return X.reshape(-1)
 
-    def backward(self, J_L_Z: ndarray):
-        return J_L_Z
+    def backward(self, J_L_N: ndarray):
+        return J_L_N

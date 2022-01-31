@@ -21,35 +21,50 @@ class SequentialNetwork:
         self.layers.append(layer)
 
     def fit(self, x_train, y_train, x_val, y_val):
+        """
+        approximates a mapping function based on the given training data
+
+        :param x_train: training set
+        :param y_train: target values of the training set
+        :param x_val: validation set
+        :param y_val: target values of the validation set
+        """
 
         progress = tqdm(range(1, self.epochs + 1))
         train_epoch_loss = []
         val_epoch_loss = []
+
+        ###### training ######
         for epoch in progress:
             train_loss = []
             val_loss = []
+
+            # compute loss and gradient for each data instance in given batch
             for x, y in zip(x_train, y_train):
-                forward_val = x
+
                 # forward pass
+                forward_val = x
                 for layer in self.layers:
                     forward_val = layer.forward(forward_val)
 
-                # loss
+                # loss and regularization loss (if enabled)
                 loss = self.loss_function.loss(forward_val, y) + np.sum([layer.layer_penalty() for layer in self.layers])
                 train_loss.append(loss)
 
-                # backprop
+                # backpropagation
                 backwards_val = self.loss_function.gradient(forward_val, y)
                 for layer in reversed(self.layers):
                     backwards_val = layer.backward(backwards_val)
 
-            # update weights
+            # update weights based on accumulated gradient
             for layer in self.layers:
                 layer.update_weights(self.learning_rate)
 
+            # compute loss for validation set
             for x, y in zip(x_val, y_val):
-                forward_val = x
+
                 # forward pass
+                forward_val = x
                 for layer in self.layers:
                     forward_val = layer.forward(forward_val)
 
@@ -67,6 +82,8 @@ class SequentialNetwork:
                 " | " +
                 "Avg. val loss: {}".format(np.mean(val_loss))
             )
+
+        # visualise training and validation loss
         if self.visualize:
             plt.plot(range(1, self.epochs + 1), train_epoch_loss, label='Train')
             plt.plot(range(1, self.epochs + 1), val_epoch_loss, label='Val')
@@ -76,6 +93,12 @@ class SequentialNetwork:
             plt.show()
 
     def predict(self, X):
+        """
+        predicts the values for given dataset
+
+        :param X: dataset for which the labels should be predicted
+        :return: predicted labels
+        """
         res = []
         for x in X:
             forward_val = x
