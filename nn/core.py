@@ -1,19 +1,17 @@
 import numpy as np
-from nn.loss_functions import LossFunction
+from nn.loss_functions import CrossEntropy
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 
 class SequentialNetwork:
-    """
-    then call fit with the train data and train labels
-    """
 
-    def __init__(self, config):
-        self.learning_rate = config["learning_rate"]
-        self.epochs = config["epochs"]
+    def __init__(self, learning_rate=0.001, epochs=100, loss_function=CrossEntropy(), visualize=True):
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+        self.loss_function = loss_function
+        self.visualize = visualize
         self.layers = []
-        self.loss_function = None
 
     def add(self, layer):
         """
@@ -21,9 +19,6 @@ class SequentialNetwork:
         :param layer: layer to be added
         """
         self.layers.append(layer)
-
-    def compile(self, loss_function: LossFunction):
-        self.loss_function = loss_function
 
     def fit(self, x_train, y_train, x_val, y_val):
 
@@ -72,13 +67,13 @@ class SequentialNetwork:
                 " | " +
                 "Avg. val loss: {}".format(np.mean(val_loss))
             )
-
-        plt.plot(range(1, self.epochs + 1), train_epoch_loss, label='Train')
-        plt.plot(range(1, self.epochs + 1), val_epoch_loss, label='Val')
-        plt.xlabel("Epoch")
-        plt.ylabel("Loss")
-        plt.legend()
-        plt.show()
+        if self.visualize:
+            plt.plot(range(1, self.epochs + 1), train_epoch_loss, label='Train')
+            plt.plot(range(1, self.epochs + 1), val_epoch_loss, label='Val')
+            plt.xlabel("Epoch")
+            plt.ylabel("Loss")
+            plt.legend()
+            plt.show()
 
     def predict(self, X):
         res = []

@@ -25,10 +25,11 @@ class Layer(ABC):
 
 class Dense(Layer):
 
-    def __init__(self, units, activation: ActivationFunction, regularizer: Regularizer = None):
+    def __init__(self, units, activation: ActivationFunction, wr: list, regularizer: Regularizer = None):
         self.units = units
         self.activation = activation
         self.regularizer = regularizer
+        self.wr = wr
         self.weights = None
         self.input = None
         self.weight_update = None
@@ -40,7 +41,7 @@ class Dense(Layer):
 
         # init weights if they have not been defined yet
         if self.weights is None:
-            self.weights = np.random.uniform(-0.1, 0.1, (len(X), self.units))
+            self.weights = np.random.uniform(self.wr[0], self.wr[1], (len(X), self.units))
             self.weight_update = np.zeros((len(X), self.units))
 
         # store data for backpropagation

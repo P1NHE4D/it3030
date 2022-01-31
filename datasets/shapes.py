@@ -5,18 +5,27 @@ from tqdm import tqdm
 
 class Shapes:
 
-    def __init__(self, config):
-        self.split_ratio = config["split_ratio"]
-        self.img_dims = config["img_dims"]
-        if not 10 <= self.img_dims <= 50:
-            raise Exception("Image dimensions must be between 10 and 50!")
-
-        self.width_range = config["width_range"]
-        self.height_range = config["height_range"]
-        self.img_noise = config["img_noise"]
-        self.flatten = config["flatten"]
-        self.dataset_size = config["dataset_size"]
-        self.centred = config["centred"]
+    def __init__(
+            self,
+            split_ratio,
+            img_dims,
+            width_range,
+            height_range,
+            img_noise,
+            dataset_size,
+            normalise=True,
+            flatten=False,
+            centred=False,
+    ):
+        self.split_ratio = split_ratio
+        self.img_dims = img_dims
+        self.width_range = width_range
+        self.height_range = height_range
+        self.img_noise = img_noise
+        self.dataset_size = dataset_size
+        self.normalise = normalise
+        self.flatten = flatten
+        self.centred = centred
 
     def draw_rectangle(self, img, width, height, x, y):
         img[y, x:x + width - 1] = 255
@@ -34,13 +43,13 @@ class Shapes:
         diameter = np.random.choice(np.arange(start=self.width_range[0], stop=self.width_range[1] + 1))
         radius = diameter // 2
         if self.centred:
-                x = (self.img_dims // 2) - radius
-                y = (self.img_dims // 2) - radius
+            x = (self.img_dims // 2) - radius
+            y = (self.img_dims // 2) - radius
         else:
             x = np.random.choice(np.arange(start=0, stop=img.shape[0] - diameter + 1))
             y = np.random.choice(np.arange(start=0, stop=img.shape[1] - diameter + 1))
         WHITE = (255, 255, 255)
-        cv.circle(img, (y+radius-1, x+radius-1), radius, WHITE, 1)
+        cv.circle(img, (y + radius - 1, x + radius - 1), radius, WHITE, 1)
         return self.add_noise(img)
 
     def draw_triangle(self, img, width, height, x, y):
@@ -73,8 +82,10 @@ class Shapes:
         for _ in progress:
             # generate base image
             img = np.zeros((self.img_dims, self.img_dims))
-            width = min(self.img_dims, np.random.choice(np.arange(start=self.width_range[0], stop=self.width_range[1] + 1)))
-            height = min(self.img_dims, np.random.choice(np.arange(start=self.height_range[0], stop=self.height_range[1] + 1)))
+            width = min(self.img_dims,
+                        np.random.choice(np.arange(start=self.width_range[0], stop=self.width_range[1] + 1)))
+            height = min(self.img_dims,
+                         np.random.choice(np.arange(start=self.height_range[0], stop=self.height_range[1] + 1)))
             if self.centred:
                 x = (self.img_dims // 2) - (width // 2)
                 y = (self.img_dims // 2) - (height // 2)
@@ -124,4 +135,3 @@ class Shapes:
         y_test = targets[test_idx]
 
         return x_train, y_train, x_val, y_val, x_test, y_test
-
