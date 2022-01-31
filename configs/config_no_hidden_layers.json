@@ -1,0 +1,38 @@
+{
+  "image_viewer": {
+    "enabled": false,
+    "set": "train",
+    "plot_preds": true,
+    "plot_count": 10
+  },
+  "globals": {
+    "lr": 0.001,
+    "epochs": 200,
+    "loss": "cross_entropy",
+    "reg_type": "l2",
+    "reg_rate": 0.0001,
+    "visualize": true
+  },
+  "layers": [
+    {
+      "type": "dense",
+      "act": "linear",
+      "units": 4,
+      "wr": [-0.1, 0.1]
+    },
+    {
+      "type": "softmax"
+    }
+  ],
+  "dataset": {
+    "split_ratio": [0.7, 0.2, 0.1],
+    "img_dims": 20,
+    "width_range": [10, 15],
+    "height_range": [10, 15],
+    "img_noise": 0.02,
+    "flatten": true,
+    "size": 1000,
+    "centred": false,
+    "normalise": true
+  }
+}
