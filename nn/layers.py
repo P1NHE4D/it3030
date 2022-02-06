@@ -9,29 +9,26 @@ from nn.regularizers import Regularizer
 class Layer(ABC):
 
     @abstractmethod
-    def forward(self, X):
+    def forward(self, input_data):
         """
-        computes the forward value of the layer
-
-        :param X: training data instance (vector)
-        :return: forward-pass value
+        Performs a forward pass through the network with the given input data
+        :param input_data: input data (1xN-vector)
         """
         pass
 
     @abstractmethod
     def backward(self, J_L_N: ndarray):
         """
-        computes the gradient with respect to the layer weights and the preceeding layers
+        Computes the gradient of the network based on the gradient of the network loss
 
-        :param J_L_N: gradient of succeeding layer
-        :return: gradient with respect to preceeding layer
+        :param J_L_N: gradient of succeeding layer with respect to this layer
+        :return: gradient of this layer with respect to previous layer
         """
         pass
 
     def update_weights(self, learning_rate):
         """
-        updates the weights of the layer based on the accumulated weight gradient and learning rate
-
+        Updates the weights using a fraction of the weight update based on the learning rate
         :param learning_rate: learning rate
         """
         pass
@@ -58,33 +55,45 @@ class Dense(Layer):
         self.weight_update = None
         self.output = None
 
-    def forward(self, X: ndarray):
+    def forward(self, input_data: ndarray):
 
         # add 1 for bias
-        X = np.hstack([X, [1]])
+        input_data = np.hstack([input_data, [1]])
 
         # init weights if they have not yet been defined
         if self.weights is None:
-            self.weights = np.random.uniform(self.wr[0], self.wr[1], (len(X), self.units))
-            self.weight_update = np.zeros((len(X), self.units))
+            self.weights = np.random.uniform(self.wr[0], self.wr[1], (len(input_data), self.units))
+            self.weight_update = np.zeros((len(input_data), self.units))
 
         # store data for backpropagation
-        self.input = X
-        output_sum = np.dot(X, self.weights)
+        self.input = input_data
+        output_sum = np.dot(input_data, self.weights)
         self.output = self.activation.function(output_sum)
 
         # compute activation value
         return self.output
 
     def backward(self, J_L_N: ndarray):
+        # gradient with respect to the activation value of this layer
         J_N_SUM = np.diag(self.activation.gradient(self.output))
+
+        # gradients from the current layer with respect to the previous layer
         J_N_M = np.dot(J_N_SUM, self.weights[:-1].T)
+
+        # gradients from current layer with respect to the incoming weights
         J_N_W = np.outer(self.input, J_N_SUM.diagonal())
+
+        # gradients from loss with respect to the previous layer
         J_L_M = np.dot(J_L_N, J_N_M)
+
+        # gradients from loss with respect to the incoming weights
         J_L_W = J_L_N * J_N_W
+
+        # adding regularization penalty if enabled
         if self.regularizer:
             J_L_W += self.regularizer.factor * self.regularizer.gradient(self.weights)
 
+        # adding weight gradient to previous weight gradients of the current batch
         self.weight_update += J_L_W
         return J_L_M
 
@@ -103,8 +112,8 @@ class Softmax(Layer):
     def __init__(self):
         self.output = None
 
-    def forward(self, X):
-        self.output = np.exp(X) / np.exp(X).sum()
+    def forward(self, input_data):
+        self.output = np.exp(input_data) / np.exp(input_data).sum()
         return self.output
 
     def backward(self, J_L_N: ndarray):
@@ -114,8 +123,8 @@ class Softmax(Layer):
 
 class Flatten(Layer):
 
-    def forward(self, X):
-        return X.reshape(-1)
+    def forward(self, input_data):
+        return input_data.reshape(-1)
 
     def backward(self, J_L_N: ndarray):
         return J_L_N
