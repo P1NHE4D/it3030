@@ -14,7 +14,7 @@ def network_from_config(config: dict) -> SequentialNetwork:
     lr = global_params.get("lr", 0.001)
     epochs = check_boundary_value("epochs", global_params.get("epochs", 100), min_val=0)
     loss = check_option_value("loss", global_params.get("loss", "mse"), options=["mse", "cross_entropy"])
-    reg_type = check_option_value("reg_type", global_params.get("reg_type", None), options=[None, "l1", "l2"])
+    reg_type = check_option_value("reg_type", global_params.get("reg_type", "none"), options=["none", "l1", "l2"])
     reg_rate = global_params.get("reg_rate", 0.0001)
     visualize = global_params.get("visualize", True)
 
