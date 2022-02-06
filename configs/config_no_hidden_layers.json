@@ -1,9 +1,9 @@
 {
   "image_viewer": {
-    "enabled": false,
+    "enabled": true,
     "set": "train",
-    "plot_preds": true,
-    "plot_count": 10
+    "plot_count": 10,
+    "random": true
   },
   "globals": {
     "lr": 0.001,
