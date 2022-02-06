@@ -1,4 +1,4 @@
-# IT3030 - Project 01
+# IT3030 - Deep Learning - Project 01
 
 Custom implementation of fully-connected neural networks.
 The configs located in `configs` can be used as a template
