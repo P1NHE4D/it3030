@@ -17,6 +17,7 @@ def network_from_config(config: dict) -> SequentialNetwork:
     reg_type = check_option_value("reg_type", global_params.get("reg_type", "none"), options=["none", "l1", "l2"])
     reg_rate = global_params.get("reg_rate", 0.0001)
     visualize = global_params.get("visualize", True)
+    verbose = global_params.get("verbose", False)
 
     if loss == "cross_entropy":
         lf = CrossEntropy()
@@ -28,7 +29,8 @@ def network_from_config(config: dict) -> SequentialNetwork:
         learning_rate=lr,
         loss_function=lf,
         epochs=epochs,
-        visualize=visualize
+        visualize=visualize,
+        verbose=verbose
     )
 
     # init regularizer
