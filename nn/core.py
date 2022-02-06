@@ -43,26 +43,23 @@ class SequentialNetwork:
 
             # compute loss and gradient for each data instance in given batch
             for x, y in zip(x_train, y_train):
-                desc = "Network input: \n{} \nTarget value: \n{}".format(x, y)
 
                 # forward pass
                 forward_val = x
                 for layer in self.layers:
                     forward_val = layer.forward(forward_val)
-                desc += "\nPrediction: \n{}".format(forward_val)
 
                 # loss and regularization loss (if enabled)
                 loss = self.loss_function.loss(forward_val, y) + np.sum(
                     [layer.layer_penalty() for layer in self.layers])
                 train_loss.append(loss)
-                desc += "\nLoss: \n{}\n".format(loss)
 
                 # backpropagation
                 backwards_val = self.loss_function.gradient(forward_val, y)
                 for layer in reversed(self.layers):
                     backwards_val = layer.backward(backwards_val)
                 if self.verbose:
-                    print(desc)
+                    print("Network input: \n{} \nTarget value: \n{}\nPrediction: \n{}\nLoss: \n{}\n".format(x, y, forward_val, loss))
 
             # update weights based on accumulated gradient
             for layer in self.layers:

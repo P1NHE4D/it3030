@@ -2,16 +2,17 @@
   "image_viewer": {
     "enabled": true,
     "set": "train",
-    "plot_preds": true,
-    "plot_count": 10
+    "plot_count": 10,
+    "random": true
   },
   "globals": {
     "lr": 0.001,
-    "epochs": 200,
+    "epochs": 100,
     "loss": "cross_entropy",
     "reg_type": "l2",
     "reg_rate": 0.0001,
-    "visualize": true
+    "visualize": true,
+    "verbose": false
   },
   "layers": [
     {
@@ -20,13 +21,13 @@
     {
       "type": "dense",
       "act": "relu",
-      "units": 256,
+      "units": 64,
       "wr": [-0.1, 0.1]
     },
     {
       "type": "dense",
       "act": "relu",
-      "units": 128,
+      "units": 32,
       "wr": [-0.1, 0.1]
     },
     {
@@ -47,7 +48,7 @@
     "img_noise": 0.02,
     "flatten": false,
     "size": 1000,
-    "centred": false,
+    "centred": true,
     "normalise": true
   }
 }
