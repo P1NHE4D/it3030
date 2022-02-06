@@ -20,7 +20,7 @@ class SequentialNetwork:
         """
         self.layers.append(layer)
 
-    def fit(self, x_train, y_train, x_val, y_val):
+    def fit(self, x_train, y_train, x_val=None, y_val=None):
         """
         approximates a mapping function based on the given training data
 
@@ -38,6 +38,7 @@ class SequentialNetwork:
         for epoch in progress:
             train_loss = []
             val_loss = []
+            progress_desc = "Epoch: {}".format(epoch)
 
             # compute loss and gradient for each data instance in given batch
             for x, y in zip(x_train, y_train):
@@ -48,7 +49,8 @@ class SequentialNetwork:
                     forward_val = layer.forward(forward_val)
 
                 # loss and regularization loss (if enabled)
-                loss = self.loss_function.loss(forward_val, y) + np.sum([layer.layer_penalty() for layer in self.layers])
+                loss = self.loss_function.loss(forward_val, y) + np.sum(
+                    [layer.layer_penalty() for layer in self.layers])
                 train_loss.append(loss)
 
                 # backpropagation
@@ -60,28 +62,28 @@ class SequentialNetwork:
             for layer in self.layers:
                 layer.update_weights(self.learning_rate)
 
-            # compute loss for validation set
-            for x, y in zip(x_val, y_val):
-
-                # forward pass
-                forward_val = x
-                for layer in self.layers:
-                    forward_val = layer.forward(forward_val)
-
-                # loss
-                loss = self.loss_function.loss(forward_val, y)
-                val_loss.append(loss)
-
+            # compute average training loss
             train_epoch_loss.append(np.mean(train_loss))
-            val_epoch_loss.append(np.mean(val_loss))
+            progress_desc += " | Avg. train loss: {}".format(np.mean(train_loss))
 
-            progress.set_description(
-                "Epoch: {}".format(epoch) +
-                " | "
-                "Avg. train loss: {}".format(np.mean(train_loss)) +
-                " | " +
-                "Avg. val loss: {}".format(np.mean(val_loss))
-            )
+            if x_val is not None and y_val is not None:
+                # compute loss for validation set
+                for x, y in zip(x_val, y_val):
+
+                    # forward pass
+                    forward_val = x
+                    for layer in self.layers:
+                        forward_val = layer.forward(forward_val)
+
+                    # loss
+                    loss = self.loss_function.loss(forward_val, y)
+                    val_loss.append(loss)
+
+                # compute average validation loss
+                val_epoch_loss.append(np.mean(val_loss))
+                progress_desc += " | Avg. val loss: {}".format(np.mean(val_loss))
+
+            progress.set_description(progress_desc)
 
         # visualise training and validation loss
         if self.visualize:

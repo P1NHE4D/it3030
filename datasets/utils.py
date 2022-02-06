@@ -1,3 +1,6 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
 from datasets.shapes import Shapes
 from utils.value_checking import check_boundary_value
 
@@ -28,3 +31,13 @@ def dataset_from_config(config) -> Shapes:
     )
 
     return dataset
+
+
+def plot_images(imgs, labels=None):
+    for i, img in enumerate(imgs):
+        if len(img.shape) == 1:
+            img = img.reshape((int(np.sqrt(img.shape[0])), int(np.sqrt(img.shape[0]))))
+        plt.imshow(img, cmap='gray')
+        if labels:
+            plt.title(labels[i])
+        plt.show()
