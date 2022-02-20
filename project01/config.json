@@ -47,7 +47,7 @@
     "height_range": [10, 15],
     "img_noise": 0.02,
     "flatten": false,
-    "size": 1000,
+    "size": 500,
     "centred": true,
     "normalise": true
   }
