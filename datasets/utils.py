@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from datasets.shapes import Shapes
-from utils.value_checking import check_boundary_value
+from datasets.utils import check_boundary_value
 
 
 def dataset_from_config(config) -> Shapes:

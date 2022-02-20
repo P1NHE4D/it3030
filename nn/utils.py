@@ -3,7 +3,7 @@ from nn.core import SequentialNetwork
 from nn.layers import Flatten, Softmax, Dense
 from nn.loss_functions import CrossEntropy, MSE
 from nn.regularizers import L2, L1
-from utils.value_checking import check_boundary_value, check_option_value
+from nn.utils import check_boundary_value, check_option_value
 
 
 def network_from_config(config: dict) -> SequentialNetwork:
